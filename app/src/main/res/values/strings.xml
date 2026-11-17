@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Signal Guard</string>
+    <string name="status_loading">Fictional inbox ready — nothing scored yet.</string>
+    <string name="status_ready">Engine ready: scores stay on the phone, explanations come from the cloud.</string>
+    <string name="status_no_firebase">Firebase is not configured: add app/google-services.json.</string>
+    <string name="status_scanned">%1$d message(s) scored on the device, %2$d flagged for a cloud explanation.</string>
+    <string name="action_scan">Score the inbox</string>
+    <string name="badge_local">⚡ LOCAL</string>
+    <string name="badge_cloud">☁ CLOUD</string>
+    <string name="meta_pending">not scored yet</string>
+    <string name="suggested_reply">Suggested reply: %1$s</string>
+</resources>
