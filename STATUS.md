@@ -21,3 +21,4 @@ Maj: 2026-11-17 23:20
 ## Claude
 
 - (design non démarré — brief UI prêt dans `SPEC.md` §7)
+- 2026-11-18 : merge queue Mergify réparée (`merge_protections` + `if`, PR #4) ; ajoutée via PR de test de `@Mergifyio queue`.
