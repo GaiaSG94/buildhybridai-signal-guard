@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Signal Guard · Inbox · 02 Evidence</title>
+<style>
+  :root{
+    --bg:#161412; --panel:#1e1b18; --panel-2:#26221e; --line:rgba(230,225,218,.09); --line-2:rgba(230,225,218,.18);
+    --text:#e6e1da; --muted:#9a928a; --faint:#675f57;
+    --low:#6cc38f; --mid:#e0a55a; --high:#e47466; --accent:#38bdf8;
+    --sans:"Helvetica Neue",Helvetica,Arial,"Liberation Sans",sans-serif;
+    --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,"DejaVu Sans Mono",monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:#0b0a09}
+  body{font-family:var(--sans);color:var(--text);-webkit-font-smoothing:antialiased;display:grid;place-items:center;min-height:100vh}
+  .frame{width:1440px;height:900px;background:var(--bg);display:flex;flex-direction:column;overflow:hidden;position:relative}
+  .num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+  nav.bar{display:flex;align-items:center;gap:36px;height:60px;padding:0 48px;border-bottom:1px solid var(--line);font-size:14px;color:var(--muted)}
+  .brand{color:var(--text);font-weight:700;letter-spacing:-.03em;font-size:16px;display:flex;align-items:center;gap:10px}
+  .brand i{display:grid;grid-template-columns:repeat(4,4px);gap:2px}
+  .brand i b{height:12px;border-radius:1px;background:var(--text)}
+  .brand i b:last-child{background:var(--accent)}
+  nav.bar a{color:inherit;text-decoration:none}
+  nav.bar a.on{color:var(--text);box-shadow:0 1px 0 var(--text);padding:20px 0}
+  .status{margin-left:auto;display:flex;gap:18px;font:12px var(--mono);color:var(--muted)}
+  .status span{display:flex;align-items:center;gap:7px}
+  .status i{width:6px;height:6px;border-radius:50%;background:var(--low)}
+  .status i.c{background:var(--accent)}
+
+  header.hero{display:grid;grid-template-columns:1fr auto;align-items:end;padding:40px 48px 28px;gap:40px}
+  h1{font-size:72px;font-weight:700;letter-spacing:-.05em;line-height:.9}
+  h1 small{display:block;font-size:15px;font-weight:400;letter-spacing:0;color:var(--muted);margin-top:16px}
+  .tally{display:flex;gap:0;border:1px solid var(--line-2);border-radius:4px}
+  .tally div{padding:14px 22px;border-right:1px solid var(--line-2);min-width:140px}
+  .tally div:last-child{border-right:0}
+  .tally .num{display:block;font-size:34px;letter-spacing:-.03em;line-height:1}
+  .tally small{display:block;font-size:11px;color:var(--muted);margin-top:8px;text-transform:uppercase;letter-spacing:.08em}
+
+  .toolbar{display:flex;align-items:center;justify-content:space-between;padding:0 48px 16px}
+  .toolbar p{font-size:13px;color:var(--muted)}
+  .btns{display:flex;gap:10px}
+  .btn{font:600 13px var(--sans);border-radius:4px;padding:10px 16px;border:1px solid var(--line-2);background:transparent;color:var(--text);cursor:pointer}
+  .btn.primary{background:var(--text);color:var(--bg);border-color:var(--text)}
+
+  table{width:calc(100% - 96px);margin:0 48px;border-collapse:collapse}
+  th{font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--faint);text-align:left;padding:10px 12px;border-top:1px solid var(--line-2);border-bottom:1px solid var(--line-2)}
+  td{padding:20px 12px;border-bottom:1px solid var(--line);vertical-align:top;font-size:14px}
+  tr.flag td{background:linear-gradient(90deg,rgba(228,116,102,.06),transparent 60%)}
+  .ex{font:12px var(--mono);color:var(--faint)}
+  .from b{display:block;font-weight:600;letter-spacing:-.01em}
+  .tag{display:inline-block;margin-top:8px;font:12px var(--mono);color:var(--text);border:1px dashed var(--line-2);padding:3px 8px;border-radius:3px;position:relative}
+  .tag::before{content:attr(data-k);position:absolute;top:-8px;left:6px;background:var(--bg);padding:0 4px;font-size:9px;letter-spacing:.1em;color:var(--faint)}
+  tr.flag .tag{border-color:rgba(228,116,102,.55)}
+  .msg{color:var(--muted);line-height:1.5;max-width:470px}
+  .sig{margin-top:8px;font:11px var(--mono);color:var(--faint);letter-spacing:.04em}
+  .sig em{font-style:normal;color:var(--text)}
+  .seg{display:grid;grid-template-columns:repeat(10,1fr);gap:3px;width:150px;margin-top:4px}
+  .seg i{height:16px;border-radius:1px;background:rgba(230,225,218,.08);transition:background 120ms}
+  .score{display:flex;align-items:baseline;gap:8px;margin-bottom:8px}
+  .score .num{font-size:24px;letter-spacing:-.03em;width:44px}
+  .score small{font:11px var(--mono);letter-spacing:.08em}
+  .route{font:12px var(--mono);color:var(--muted);line-height:1.8}
+  .route .c{color:var(--accent)}
+  .route .arrow{color:var(--faint)}
+  .open{font:600 12px var(--sans);color:var(--text);text-decoration:none;border-bottom:1px solid var(--line-2)}
+  footer{margin-top:auto;display:flex;justify-content:space-between;padding:16px 48px;border-top:1px solid var(--line);font:12px var(--mono);color:var(--faint)}
+  .label{position:absolute;right:16px;bottom:44px;font:11px var(--mono);color:var(--faint);letter-spacing:.06em}
+</style>
+</head>
+<body>
+<div class="frame">
+  <nav class="bar">
+    <span class="brand"><i><b></b><b></b><b></b><b></b></i>Signal Guard</span>
+    <a class="on" href="#">Inbox</a><a href="#">Paste a message</a><a href="#">Dashboard</a>
+    <div class="status">
+      <span><i></i>Gemini Nano 4 · on device</span>
+      <span><i class="c"></i>Gemini cloud · above 70 only</span>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <h1>Inbox<small>Every message is scored on this device first. The cloud only sees what crosses the threshold.</small></h1>
+    <div class="tally">
+      <div><span class="num" data-count="4">4</span><small>Scored locally</small></div>
+      <div><span class="num" data-count="2" style="color:var(--high)">2</span><small>Flagged</small></div>
+      <div><span class="num" data-count="2" style="color:var(--accent)">2</span><small>Cloud calls</small></div>
+    </div>
+  </header>
+
+  <div class="toolbar">
+    <p>Demo inbox · 4 fictional messages · threshold <span class="num" style="color:var(--text)">70</span> from Remote Config</p>
+    <div class="btns"><button class="btn" id="replay">Replay scan</button><button class="btn primary">Score the inbox</button></div>
+  </div>
+
+  <table>
+    <thead><tr><th style="width:56px">No.</th><th style="width:250px">Sender</th><th>Message</th><th style="width:200px">Local risk</th><th style="width:200px">Route</th><th style="width:70px"></th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table>
+
+  <footer><span>Audit · 4 local analyses · 2 cloud calls · 2 messages never left this device</span><span>All messages are fictional. No real person, no real data.</span></footer>
+  <span class="label">PLANCHE V1 · 02 EVIDENCE · 1440×900</span>
+</div>
+<script>
+const C={LOW:'#6cc38f',MEDIUM:'#e0a55a',HIGH:'#e47466'};
+const lvl=r=>r>=70?'HIGH':r>=35?'MEDIUM':'LOW';
+const M=[
+ {s:'Unknown number',k:'NUMBER',tag:'+33 6 12 34 56 78',b:'URGENT: your account is suspended. Pay 49 EUR now at http://secure-verif1.xyz to keep access.',r:92,t:'phishing',ms:214,cloud:'1.38 s',sig:['urgency','call to action','padded domain: secure-verif1.xyz']},
+ {s:'Amina Diallo',k:'CONTACT',tag:'supplier',b:'Invoice 2026-118 is ready, the amount is unchanged. Can you confirm receipt before Friday?',r:14,t:'legit',ms:172},
+ {s:'Bank (spoofed)',k:'NUMBER',tag:'+33 1 44 55 66 77',b:'Dear client, a new beneficiary has been added to your account. Call +33 1 44 55 66 77 to cancel.',r:78,t:'scam',ms:196,cloud:'1.21 s',sig:['urgency','call to action']},
+ {s:'Team – canteen',k:'CONTACT',tag:'internal',b:'The canteen menu for Thursday is posted in the usual place. See you there!',r:3,t:'legit',ms:158},
+];
+document.getElementById('rows').innerHTML=M.map((m,i)=>`
+<tr class="${m.r>=70?'flag':''}" data-r="${m.r}">
+ <td class="ex">0${i+1}</td>
+ <td class="from"><b>${m.s}</b><span class="tag" data-k="${m.k}">${m.tag}</span></td>
+ <td><p class="msg">${m.b}</p>${m.sig?`<p class="sig">Signals · ${m.sig.map(s=>`<em>${s}</em>`).join(' / ')}</p>`:''}</td>
+ <td><div class="score"><span class="num v">0</span><small style="color:${C[lvl(m.r)]}">${lvl(m.r)}</small></div><div class="seg">${'<i></i>'.repeat(10)}</div></td>
+ <td class="route">LOCAL ${m.ms} ms<br>${m.cloud?`<span class="arrow">└</span> <span class="c">CLOUD ${m.cloud}</span><br><span class="arrow">&nbsp;&nbsp;</span>explanation + reply`:'<span style="color:var(--faint)">stayed on device</span>'}</td>
+ <td>${m.cloud?'<a class="open" href="#">Open</a>':''}</td>
+</tr>`).join('');
+function play(){
+ document.querySelectorAll('tbody tr').forEach((tr,i)=>{
+  const r=+tr.dataset.r,segs=[...tr.querySelectorAll('.seg i')],v=tr.querySelector('.v'),col=C[lvl(r)],n=Math.max(1,Math.round(r/10));
+  segs.forEach(s=>s.style.background='');v.textContent='0';
+  setTimeout(()=>{
+   segs.slice(0,n).forEach((s,j)=>setTimeout(()=>s.style.background=col,j*70));
+   const t0=performance.now(),d=n*70+200;(function tick(t){const p=Math.min(1,(t-t0)/d);v.textContent=Math.round(r*p);if(p<1)setTimeout(()=>tick(performance.now()),16)})(t0);
+  },150+i*160);
+ });
+}
+document.getElementById('replay').onclick=play;
+setTimeout(play,60);
+</script>
+</body>
+</html>
