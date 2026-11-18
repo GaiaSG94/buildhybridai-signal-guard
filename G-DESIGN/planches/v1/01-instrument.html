@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Signal Guard · Inbox · 01 Instrument</title>
+<style>
+  :root{
+    --bg:#0f1216; --panel:#161b21; --panel-2:#1b2128; --line:rgba(232,237,242,.08); --line-2:rgba(232,237,242,.14);
+    --text:#e8edf2; --muted:#8b96a3; --faint:#5b6571;
+    --low:#3ddc84; --mid:#ffb454; --high:#ff5d5d; --accent:#38bdf8;
+    --sans:"Inter Tight","Helvetica Neue",Helvetica,Arial,"Liberation Sans",sans-serif;
+    --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,"DejaVu Sans Mono",monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:#07090b}
+  body{font-family:var(--sans);color:var(--text);-webkit-font-smoothing:antialiased;display:grid;place-items:center;min-height:100vh}
+  .frame{width:1440px;height:900px;background:var(--bg);display:grid;grid-template-columns:232px 1fr 360px;overflow:hidden;position:relative}
+  .num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+  /* sidebar */
+  aside.nav{border-right:1px solid var(--line);padding:28px 20px;display:flex;flex-direction:column;gap:28px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;letter-spacing:-.02em;font-size:17px}
+  .brand svg{flex:none}
+  .nav ul{list-style:none;display:flex;flex-direction:column;gap:2px}
+  .nav li{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;border-radius:6px;color:var(--muted);font-size:14px}
+  .nav li.on{background:var(--panel);color:var(--text);box-shadow:inset 0 0 0 1px var(--line)}
+  .nav li .num{font-size:12px;color:var(--faint)}
+  .nav .foot{margin-top:auto;font-size:12px;color:var(--faint);line-height:1.6}
+  .nav .foot b{color:var(--muted);font-weight:500}
+
+  /* main */
+  main{display:flex;flex-direction:column;min-width:0}
+  header.top{display:flex;align-items:flex-end;justify-content:space-between;padding:32px 40px 24px;border-bottom:1px solid var(--line)}
+  h1{font-size:44px;font-weight:500;letter-spacing:-.045em;line-height:1}
+  .sub{margin-top:10px;color:var(--muted);font-size:14px}
+  .sub .num{color:var(--text)}
+  .actions{display:flex;gap:10px}
+  .btn{font:500 14px var(--sans);letter-spacing:-.01em;border-radius:7px;padding:10px 16px;border:1px solid var(--line-2);background:transparent;color:var(--text);cursor:pointer}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#06121a}
+  .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  .legend{display:flex;gap:22px;padding:14px 40px;border-bottom:1px solid var(--line);font-size:12px;color:var(--muted)}
+  .legend span{display:flex;align-items:center;gap:8px}
+  .dot{width:8px;height:8px;border-radius:50%}
+
+  .list{flex:1;overflow:hidden}
+  .row{display:grid;grid-template-columns:76px 1fr 150px;gap:24px;align-items:center;padding:22px 40px;border-bottom:1px solid var(--line);position:relative}
+  .row.sel{background:var(--panel)}
+  .row.sel::before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--accent)}
+  .gauge{position:relative;width:76px;height:46px}
+  .gauge svg{display:block}
+  .gauge .v{position:absolute;left:0;right:0;bottom:-2px;text-align:center;font-size:19px;font-weight:500}
+  .who{display:flex;align-items:baseline;gap:12px;margin-bottom:6px}
+  .who b{font-weight:500;font-size:15px;letter-spacing:-.01em}
+  .who .num{font-size:12px;color:var(--muted)}
+  .body{color:var(--muted);font-size:14px;line-height:1.5;max-width:640px}
+  .body .domain{font-family:var(--mono);color:var(--text);background:var(--panel-2);box-shadow:inset 0 0 0 1px var(--line-2);border-radius:4px;padding:1px 6px;font-size:13px}
+  .sig{display:flex;gap:6px;margin-top:10px}
+  .sig i{font-style:normal;font-size:11px;color:var(--muted);border:1px solid var(--line-2);border-radius:999px;padding:2px 9px}
+  .meta{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+  .chip{display:inline-flex;align-items:center;gap:6px;font:500 11px var(--mono);letter-spacing:.06em;padding:4px 8px;border-radius:5px;border:1px solid var(--line-2);color:var(--text)}
+  .chip.cloud{border-color:rgba(56,189,248,.45);color:var(--accent)}
+  .chip .num{color:var(--muted);letter-spacing:0}
+  .lvl{font:500 11px var(--mono);letter-spacing:.08em}
+
+  /* right rail */
+  aside.trail{border-left:1px solid var(--line);background:linear-gradient(180deg,var(--panel),var(--bg) 70%);padding:32px 28px;display:flex;flex-direction:column;gap:28px}
+  .kicker{font:500 11px var(--mono);letter-spacing:.12em;color:var(--faint);text-transform:uppercase}
+  .big{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .big div{background:var(--panel);padding:18px}
+  .big .num{display:block;font-size:40px;letter-spacing:-.04em;line-height:1}
+  .big small{display:block;margin-top:8px;font-size:12px;color:var(--muted)}
+  .route{display:flex;flex-direction:column;gap:0}
+  .step{display:grid;grid-template-columns:18px 1fr auto;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);font-size:13px;align-items:center}
+  .step .k{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--muted);margin-left:4px}
+  .step.c .k{border-color:var(--accent);background:var(--accent)}
+  .step span{color:var(--muted)}
+  .step b{font-weight:500;color:var(--text)}
+  .step .num{font-size:12px;color:var(--muted)}
+  .thr{font-size:13px;color:var(--muted);line-height:1.6;border:1px solid var(--line);border-radius:10px;padding:16px}
+  .thr .bar{position:relative;height:6px;border-radius:3px;margin:14px 0 6px;background:linear-gradient(90deg,var(--low) 0 35%,var(--mid) 35% 70%,var(--high) 70%);opacity:.85}
+  .thr .bar::after{content:"";position:absolute;left:70%;top:-5px;bottom:-5px;width:2px;background:var(--text)}
+  .thr .ticks{display:flex;justify-content:space-between;font-size:11px}
+  .label{position:absolute;right:16px;bottom:12px;font:11px var(--mono);color:var(--faint);letter-spacing:.06em}
+</style>
+</head>
+<body>
+<div class="frame">
+  <aside class="nav">
+    <div class="brand">
+      <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><path d="M4 18a9 9 0 0 1 18 0" fill="none" stroke="#e8edf2" stroke-width="2.2" stroke-linecap="round"/><path d="M13 18 18 11" stroke="#38bdf8" stroke-width="2.2" stroke-linecap="round"/><circle cx="13" cy="18" r="2" fill="#e8edf2"/></svg>
+      Signal Guard
+    </div>
+    <ul>
+      <li class="on">Inbox <span class="num">4</span></li>
+      <li>Paste a message</li>
+      <li>Dashboard</li>
+    </ul>
+    <div class="foot">
+      <b>On-device model</b><br>Gemini Nano 4 · ready<br><br>
+      <b>Cloud model</b><br>Gemini · called above threshold<br><br>
+      Demo inbox · all messages are fictional
+    </div>
+  </aside>
+
+  <main>
+    <header class="top">
+      <div>
+        <h1>Inbox</h1>
+        <p class="sub"><span class="num" data-count="4">4</span> scored on this device · <span class="num" data-count="2">2</span> flagged</p>
+      </div>
+      <div class="actions">
+        <button class="btn" id="replay">Replay scan</button>
+        <button class="btn primary">Score the inbox</button>
+      </div>
+    </header>
+    <div class="legend">
+      <span><i class="dot" style="background:var(--low)"></i>Low 0–34</span>
+      <span><i class="dot" style="background:var(--mid)"></i>Medium 35–69</span>
+      <span><i class="dot" style="background:var(--high)"></i>High 70–100 · explained by the cloud</span>
+    </div>
+
+    <div class="list" id="list"></div>
+  </main>
+
+  <aside class="trail">
+    <div>
+      <p class="kicker">Hybrid audit trail</p>
+    </div>
+    <div class="big">
+      <div><span class="num" data-count="4">4</span><small>local analyses</small></div>
+      <div><span class="num" data-count="2" style="color:var(--accent)">2</span><small>cloud calls</small></div>
+    </div>
+    <div>
+      <p class="kicker" style="margin-bottom:6px">Route, this scan</p>
+      <div class="route">
+        <div class="step"><i class="k"></i><span><b>Unknown number</b> · local</span><span class="num">214 ms</span></div>
+        <div class="step c"><i class="k"></i><span><b>Unknown number</b> · cloud</span><span class="num">1.38 s</span></div>
+        <div class="step"><i class="k"></i><span><b>Amina Diallo</b> · local</span><span class="num">172 ms</span></div>
+        <div class="step"><i class="k"></i><span><b>Bank (spoofed)</b> · local</span><span class="num">196 ms</span></div>
+        <div class="step c"><i class="k"></i><span><b>Bank (spoofed)</b> · cloud</span><span class="num">1.21 s</span></div>
+        <div class="step"><i class="k"></i><span><b>Team – canteen</b> · local</span><span class="num">158 ms</span></div>
+      </div>
+    </div>
+    <div class="thr">
+      Cloud threshold <b class="num" style="color:var(--text)">70</b> · set in Remote Config. Below it, nothing leaves this device.
+      <div class="bar"></div>
+      <div class="ticks num"><span>0</span><span>35</span><span style="margin-left:24%">70</span><span>100</span></div>
+    </div>
+  </aside>
+  <span class="label">PLANCHE V1 · 01 INSTRUMENT · 1440×900</span>
+</div>
+
+<script>
+const C={LOW:'#3ddc84',MEDIUM:'#ffb454',HIGH:'#ff5d5d'};
+const lvl=r=>r>=70?'HIGH':r>=35?'MEDIUM':'LOW';
+const M=[
+ {s:'Unknown number',n:'+33 6 12 34 56 78',b:'URGENT: your account is suspended. Pay 49 EUR now at <span class="domain">secure-verif1.xyz</span> to keep access.',r:92,t:'phishing',ms:214,cloud:'1.38 s',sig:['Urgency','Call to action','Padded domain']},
+ {s:'Amina Diallo',n:'supplier',b:'Invoice 2026-118 is ready, the amount is unchanged. Can you confirm receipt before Friday?',r:14,t:'legit',ms:172},
+ {s:'Bank (spoofed)',n:'+33 1 44 55 66 77',b:'Dear client, a new beneficiary has been added to your account. Call <span class="domain">+33 1 44 55 66 77</span> to cancel.',r:78,t:'scam',ms:196,cloud:'1.21 s',sig:['Urgency','Call to action']},
+ {s:'Team – canteen',n:'internal',b:'The canteen menu for Thursday is posted in the usual place. See you there!',r:3,t:'legit',ms:158},
+];
+const L=Math.PI*30; // half-circle length r=30
+function arc(){return `<svg width="76" height="46" viewBox="0 0 76 46"><path d="M8 40a30 30 0 0 1 60 0" fill="none" stroke="rgba(232,237,242,.1)" stroke-width="6" stroke-linecap="round"/><path class="fill" d="M8 40a30 30 0 0 1 60 0" fill="none" stroke-width="6" stroke-linecap="round" stroke-dasharray="${L}" stroke-dashoffset="${L}"/></svg>`}
+document.getElementById('list').innerHTML=M.map((m,i)=>`
+ <div class="row ${i===0?'sel':''}" data-r="${m.r}">
+  <div class="gauge">${arc()}<div class="v num">0</div></div>
+  <div style="min-width:0">
+   <div class="who"><b>${m.s}</b><span class="num">${m.n}</span></div>
+   <p class="body">${m.b}</p>
+   ${m.sig?`<div class="sig">${m.sig.map(s=>`<i>${s}</i>`).join('')}</div>`:''}
+  </div>
+  <div class="meta">
+   <span class="lvl" style="color:${C[lvl(m.r)]}">${lvl(m.r)} · ${m.t.toUpperCase()}</span>
+   <span class="chip">LOCAL <span class="num">${m.ms} ms</span></span>
+   ${m.cloud?`<span class="chip cloud">CLOUD <span class="num">${m.cloud}</span></span>`:''}
+  </div>
+ </div>`).join('');
+function play(){
+  document.querySelectorAll('.row').forEach((row,i)=>{
+    const r=+row.dataset.r,f=row.querySelector('.fill'),v=row.querySelector('.v');
+    f.style.transition='none';f.style.strokeDashoffset=L;f.setAttribute('stroke',C[lvl(r)]);v.textContent='0';
+    setTimeout(()=>{
+      f.style.transition='stroke-dashoffset 900ms cubic-bezier(.2,.7,.2,1)';f.style.strokeDashoffset=L*(1-r/100);
+      const t0=performance.now();(function tick(t){const p=Math.min(1,(t-t0)/900);v.textContent=Math.round(r*(1-Math.pow(1-p,3)));if(p<1)setTimeout(()=>tick(performance.now()),16)})(t0);
+    },120+i*140);
+  });
+}
+document.getElementById('replay').onclick=play;
+setTimeout(play,60);
+</script>
+</body>
+</html>

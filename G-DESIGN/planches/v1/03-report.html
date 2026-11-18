@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Signal Guard · Inbox · 03 Report</title>
+<style>
+  :root{
+    --bg:#f3f1ec; --panel:#ffffff; --line:#e1ddd5; --line-2:#c9c3b8;
+    --text:#15181b; --muted:#5d6268; --faint:#8d9096;
+    --low:#1d8a4e; --mid:#a8640a; --high:#c0392f; --accent:#0b7fb3;
+    --sans:"Helvetica Neue",Helvetica,Arial,"Liberation Sans",sans-serif;
+    --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,"DejaVu Sans Mono",monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:#dcd8d0}
+  body{font-family:var(--sans);color:var(--text);-webkit-font-smoothing:antialiased;display:grid;place-items:center;min-height:100vh}
+  .frame{width:1440px;height:900px;background:var(--bg);display:grid;grid-template-columns:1fr 1fr;grid-template-rows:64px 1fr;overflow:hidden;position:relative}
+  .num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+  nav{grid-column:1/-1;display:flex;align-items:center;gap:32px;padding:0 56px;border-bottom:1px solid var(--line);font-size:14px;color:var(--muted)}
+  .brand{color:var(--text);font-weight:700;letter-spacing:-.03em;font-size:16px;margin-right:12px}
+  .brand span{color:var(--accent)}
+  nav a{color:inherit;text-decoration:none}
+  nav a.on{color:var(--text);font-weight:600}
+  nav .right{margin-left:auto;font:12px var(--mono);color:var(--muted)}
+
+  section.lede{padding:56px 56px 40px;display:flex;flex-direction:column;border-right:1px solid var(--line)}
+  .kicker{font:500 11px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+  h1{margin-top:20px;font-size:56px;font-weight:700;letter-spacing:-.045em;line-height:1.02}
+  h1 .q{color:var(--faint)}
+  h1 .c{color:var(--accent)}
+  .lede p.sub{margin-top:22px;font-size:17px;line-height:1.55;color:var(--muted);max-width:520px}
+  .split{margin-top:44px;border-top:1px solid var(--text);padding-top:18px}
+  .split .bar{display:flex;height:36px;gap:3px;margin:14px 0 10px}
+  .split .bar i{flex:1;border-radius:2px;display:grid;place-items:center;font:500 11px var(--mono);letter-spacing:.06em}
+  .split .bar i.l{background:#e4e8e3;color:var(--text);box-shadow:inset 0 0 0 1px #cfd6ce}
+  .split .bar i.c{background:var(--accent);color:#fff}
+  .split dl{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:22px}
+  .split dt{font-size:12px;color:var(--muted)}
+  .split dd{font:500 30px var(--mono);letter-spacing:-.03em;margin-top:6px}
+  .lede .actions{margin-top:auto;display:flex;gap:12px;align-items:center}
+  .btn{font:600 14px var(--sans);border-radius:999px;padding:12px 22px;border:1px solid var(--line-2);background:transparent;color:var(--text);cursor:pointer}
+  .btn.primary{background:var(--text);color:var(--bg);border-color:var(--text)}
+  .lede .note{font-size:12px;color:var(--faint);margin-left:8px}
+
+  section.list{padding:40px 56px;display:flex;flex-direction:column;gap:14px;background:linear-gradient(90deg,rgba(0,0,0,.015),transparent 30%)}
+  .scale-head{display:flex;justify-content:space-between;align-items:baseline}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px 20px}
+  .card.flag{border-color:#e6c9c4}
+  .top{display:flex;justify-content:space-between;align-items:baseline}
+  .top b{font-weight:600;letter-spacing:-.01em;font-size:15px}
+  .top .num{font-size:12px;color:var(--muted)}
+  .card p{margin-top:6px;font-size:14px;color:var(--muted);line-height:1.5}
+  .card p code{font:13px var(--mono);color:var(--text);background:#f1eee8;border-bottom:1px solid var(--high);padding:0 4px}
+  .scale{position:relative;height:30px;margin-top:14px}
+  .scale .track{position:absolute;left:0;right:0;top:12px;height:1px;background:var(--line-2)}
+  .scale .tick{position:absolute;top:8px;width:1px;height:9px;background:var(--line-2)}
+  .scale .thr{position:absolute;left:70%;top:2px;height:22px;border-left:1px dashed var(--accent)}
+  .scale .mk{position:absolute;top:6px;width:13px;height:13px;border-radius:50%;margin-left:-6.5px;border:2px solid var(--bg);box-shadow:0 0 0 1px currentColor;background:currentColor;left:0;transition:left 900ms cubic-bezier(.2,.7,.2,1)}
+  .scale .fill{position:absolute;left:0;top:11px;height:3px;background:currentColor;width:0;transition:width 900ms cubic-bezier(.2,.7,.2,1);border-radius:2px}
+  .foot{display:flex;justify-content:space-between;align-items:center;margin-top:4px;font:12px var(--mono);color:var(--muted)}
+  .foot .r{display:flex;gap:14px;align-items:center}
+  .foot .v{font-size:15px;font-weight:600}
+  .pill{font:600 10px var(--mono);letter-spacing:.08em;padding:3px 7px;border-radius:999px;border:1px solid var(--line-2);color:var(--text)}
+  .pill.c{border-color:var(--accent);color:var(--accent)}
+  .axis{display:flex;justify-content:space-between;font:11px var(--mono);color:var(--faint);padding:0 2px}
+  .label{position:absolute;right:16px;bottom:12px;font:11px var(--mono);color:var(--faint);letter-spacing:.06em}
+</style>
+</head>
+<body>
+<div class="frame">
+  <nav>
+    <span class="brand">Signal<span>/</span>Guard</span>
+    <a class="on" href="#">Inbox</a><a href="#">Paste a message</a><a href="#">Dashboard</a>
+    <span class="right">Gemini Nano 4 on device · Gemini cloud above <b>70</b></span>
+  </nav>
+
+  <section class="lede">
+    <p class="kicker">Today's scan · demo inbox</p>
+    <h1>4 messages read on this device. <span class="c">2 sent to the cloud</span> <span class="q">for an explanation.</span></h1>
+    <p class="sub">The on-device model scores every message from 0 to 100. Only messages at or above the threshold go to the cloud, which explains the scam and drafts a reply.</p>
+    <div class="split">
+      <p class="kicker">Where each analysis ran</p>
+      <div class="bar"><i class="l">LOCAL</i><i class="l">LOCAL</i><i class="l">LOCAL</i><i class="l">LOCAL</i><i class="c">CLOUD</i><i class="c">CLOUD</i></div>
+      <dl>
+        <div><dt>Local analyses</dt><dd>4</dd></div>
+        <div><dt>Cloud calls</dt><dd style="color:var(--accent)">2</dd></div>
+        <div><dt>Median local latency</dt><dd>184<small style="font-size:14px"> ms</small></dd></div>
+      </dl>
+    </div>
+    <div class="actions">
+      <button class="btn primary">Score the inbox</button>
+      <button class="btn" id="replay">Replay scan</button>
+      <span class="note">All messages are fictional.</span>
+    </div>
+  </section>
+
+  <section class="list">
+    <div class="scale-head"><p class="kicker">Local risk, 0 – 100</p><p class="kicker" style="color:var(--accent)">┆ cloud threshold 70</p></div>
+    <div id="cards" style="display:flex;flex-direction:column;gap:12px"></div>
+    <div class="axis"><span>0 harmless</span><span>35</span><span>70</span><span>100 certainly a scam</span></div>
+  </section>
+  <span class="label">PLANCHE V1 · 03 REPORT · 1440×900</span>
+</div>
+<script>
+const C={LOW:'#1d8a4e',MEDIUM:'#a8640a',HIGH:'#c0392f'};
+const lvl=r=>r>=70?'HIGH':r>=35?'MEDIUM':'LOW';
+const M=[
+ {s:'Unknown number',n:'+33 6 12 34 56 78',b:'URGENT: your account is suspended. Pay 49 EUR now at <code>secure-verif1.xyz</code> to keep access.',r:92,t:'phishing',ms:214,cloud:'1.38 s'},
+ {s:'Amina Diallo',n:'supplier',b:'Invoice 2026-118 is ready, the amount is unchanged. Can you confirm receipt before Friday?',r:14,t:'legit',ms:172},
+ {s:'Bank (spoofed)',n:'+33 1 44 55 66 77',b:'Dear client, a new beneficiary has been added to your account. Call <code>+33 1 44 55 66 77</code> to cancel.',r:78,t:'scam',ms:196,cloud:'1.21 s'},
+ {s:'Team – canteen',n:'internal',b:'The canteen menu for Thursday is posted in the usual place. See you there!',r:3,t:'legit',ms:158},
+];
+document.getElementById('cards').innerHTML=M.map(m=>`
+<article class="card ${m.r>=70?'flag':''}" data-r="${m.r}">
+ <div class="top"><b>${m.s}</b><span class="num">${m.n}</span></div>
+ <p>${m.b}</p>
+ <div class="scale" style="color:${C[lvl(m.r)]}">
+  <div class="track"></div>${[0,35,100].map(x=>`<i class="tick" style="left:${x}%"></i>`).join('')}<i class="thr"></i>
+  <i class="fill"></i><i class="mk"></i>
+ </div>
+ <div class="foot">
+  <span class="r"><span class="v num" style="color:${C[lvl(m.r)]}">0</span><span>${lvl(m.r).toLowerCase()} · ${m.t}</span></span>
+  <span class="r"><span class="pill">LOCAL ${m.ms} ms</span>${m.cloud?`<span class="pill c">CLOUD ${m.cloud} · explained</span>`:''}</span>
+ </div>
+</article>`).join('');
+function play(){
+ document.querySelectorAll('.card').forEach((c,i)=>{
+  const r=+c.dataset.r,mk=c.querySelector('.mk'),f=c.querySelector('.fill'),v=c.querySelector('.v');
+  mk.style.transition=f.style.transition='none';mk.style.left='0%';f.style.width='0%';v.textContent='0';
+  void c.offsetWidth;
+  setTimeout(()=>{mk.style.transition=f.style.transition='';mk.style.left=r+'%';f.style.width=r+'%';
+   const t0=performance.now();(function tick(t){const p=Math.min(1,(t-t0)/900);v.textContent=Math.round(r*(1-Math.pow(1-p,3)));if(p<1)setTimeout(()=>tick(performance.now()),16)})(t0);
+  },150+i*160);
+ });
+}
+document.getElementById('replay').onclick=play;
+setTimeout(play,60);
+</script>
+</body>
+</html>
