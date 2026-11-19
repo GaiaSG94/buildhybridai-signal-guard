@@ -22,3 +22,16 @@ Maj: 2026-11-17 23:20
 
 - (design non démarré — brief UI prêt dans `SPEC.md` §7)
 - 2026-11-18 : merge queue Mergify réparée (`merge_protections` + `if`, PR #4) ; ajoutée via PR de test de `@Mergifyio queue`.
+
+## opencode - 2026-11-19 (arbitrage R2 -> scaffold web)
+
+- **Plateforme tranchee : Web/Chrome.** Le depot Gradle est gele (branche
+  `android-r1`, conservee) ; `main` porte desormais l'app web.
+- **Scaffold livre** (TypeScript + Vite + `firebase/ai`) : passe locale
+  `PREFER_ON_DEVICE` (RISK/TYPE), escalade `ONLY_IN_CLOUD` au-dela de 70
+  (WHY/REPLY), badge LOCAL/CLOUD pilote par `inferenceSource`, page Inbox /
+  Message / Paste dans le style Relief verrouille, ligne d'audit mesuree.
+- **Verifie** : `npm test` 19/19, `npm run typecheck` propre, `npm run build` OK.
+- **Reste a faire** : valeurs Firebase (`.env.local`) + App Check pour la demo
+  cloud, test `tools/nano-check` sur le Chrome de Gaia, video <= 3 min
+  (`SCRIPT.md` a reecrire pour la version web), hebergement de la demo.

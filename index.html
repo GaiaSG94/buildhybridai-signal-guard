@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Signal Guard - on-device risk scoring, cloud explanation only when needed</title>
+    <meta
+      name="description"
+      content="Signal Guard scores suspicious messages on the device with Firebase AI Logic hybrid inference, and only sends the flagged ones to the cloud for an explanation and a reply you can forward."
+    />
+  </head>
+  <body>
+    <div class="stage" id="stage">
+      <div class="frame" id="frame">
+        <div class="wall"></div>
+        <div class="ceil"></div>
+        <i class="lamp" style="left: 245px"></i>
+        <i class="lamp" style="left: 575px"></i>
+        <i class="lamp" style="left: 905px"></i>
+        <i class="lamp" style="left: 1235px"></i>
+        <div class="floor"></div>
+        <div class="skirting"></div>
+
+        <div class="wm">Signal<b>/</b>Guard</div>
+        <nav>
+          <a href="#/inbox" data-view="inbox" class="on">Inbox</a>
+          <a href="#/paste" data-view="paste">Paste a message</a>
+        </nav>
+        <div class="cta">
+          <button class="btn ghost" id="replay" type="button" hidden>Replay scan</button>
+          <button class="btn pri" id="scan" type="button">Score the inbox</button>
+        </div>
+
+        <p class="audit" id="audit" hidden></p>
+        <p class="notice" id="notice" hidden></p>
+
+        <section class="view" id="view-inbox">
+          <p class="wall-text" id="wall-text">LOCAL RISK · SCORED ON THIS DEVICE · CLOUD ONLY ABOVE 70</p>
+          <p class="wall-title" id="title">Four messages on the wall.</p>
+          <div id="nums"></div>
+          <div id="plaques"></div>
+          <svg id="scribble" width="1440" height="900"></svg>
+          <div id="notes"></div>
+        </section>
+
+        <section class="view" id="view-message" hidden></section>
+        <section class="view" id="view-paste" hidden></section>
+
+        <span class="tag">SIGNAL GUARD · RELIEF · 1440 × 900 · FICTIONAL DEMO</span>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
