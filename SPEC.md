@@ -60,3 +60,33 @@ Repo : https://github.com/GaiaSG94/buildhybridai-signal-guard (clone : `app/`).
 - **Signatures visuelles** : jauges de risque qui se remplissent en masse au scan (moment signature), compteur « scored / flagged ».
 - **Interdits** : logos tierces, emoji décoratifs, gradients criards, vraies captures de SMS.
 - **Contraintes** : capture 16:9, anglais, contrastes AA.
+
+## 8. R2 — Web/Chrome (2026-11-19)
+
+La plateforme Android de la §1 est **abandonnee** : aucun appareil du duo ne
+supporte Gemini Nano on-device (S20 FE / Redmi Note 13 Pro 5G absents de la liste
+ML Kit, emulateur sans AICore). Le code Kotlin reste sur la branche `android-r1`
+(reference, jamais soumis). La section §1 decrit donc l'historique, pas la cible.
+
+- **Stack** : TypeScript + Vite (DOM vanilla, pas de framework), vitest ; CSS
+  ecrit a la main depuis `G-DESIGN/STYLE.md` (Relief, verrouille le 2026-11-18),
+  polices OFL embarquees (aucun appel reseau).
+- **Firebase AI Logic** (`firebase/ai`) : `getAI(app, { backend: new
+  GoogleAIBackend() })` au runtime (`src/firebase.ts`) — Gemini Developer API,
+  plan Spark, aucun moyen de paiement. `AgentPlatformBackend` (ex-Vertex) reste
+  disponible mais exige Blaze : non par defaut.
+- **Passe locale** (`src/models.ts`) : `InferenceMode.PREFER_ON_DEVICE`, prompt
+  court (`src/core/prompts.ts`), sortie stricte `RISK:` / `TYPE:`.
+  `response.inferenceSource` pilote le badge LOCAL / CLOUD.
+- **Passe cloud** : `InferenceMode.ONLY_IN_CLOUD`, appelee **uniquement** si le
+  score local >= 70 (`src/engine.ts`), sortie `WHY:` / `REPLY:`. La `REPLY` est
+  ecrite pour etre transmise telle quelle a un proche (langage simple).
+- **Pages** : Inbox (`#/inbox`), Message (`#/message/<id>`), Paste (`#/paste`).
+  Le Dashboard Firestore de `PAGES.md` n'est pas dans ce scaffold.
+- **Mesures** : `src/core/metrics.ts` calcule medianes locales/cloud, nombre
+  d'analyses locales, d'appels cloud et part restee sur l'appareil, a partir des
+  executions reelles (rien n'est code en dur). La ligne d'audit les affiche.
+- **Tests** : 19 tests vitest (parseurs RISK/TYPE et WHY/REPLY, clamp, niveaux,
+  seuil d'escalade, medianes et part locale, reperage des signaux).
+- **CI** : `.github/workflows/ci.yml` (npm ci / test / build) ; `android.yml`
+  supprime.

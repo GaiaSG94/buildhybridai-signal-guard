@@ -1,70 +1,118 @@
 # Signal Guard
 
-Your inbox, scored on the phone.
+Suspicious messages, explained in plain words — and only the suspicious ones
+ever leave your device.
 
-Signal Guard runs a **fictional demo inbox** where every message gets a risk
-score **on the device** (Gemini Nano through the ML Kit Prompt API, wired via
-Firebase AI Logic) — no network, no message leaving the phone. Only the
-messages flagged as clearly dangerous are sent to the **cloud model**, which
-explains the red flags and suggests a reply.
-
-Every row shows where the inference ran (`⚡ LOCAL` for the score, `☁ CLOUD`
-for the explanation), the latency and the risk level.
+Signal Guard is a web app built on **Firebase AI Logic hybrid inference**. Every
+message is scored **on the device** (Gemini Nano through the Chrome Prompt API)
+with a short, strict prompt. Only when the local score crosses **70/100** does
+the message go up to the cloud model, which explains the trick and writes a calm
+reply the user can forward to a worried relative.
 
 ## Why it matters
 
-Sending your private messages to a cloud filter to detect scams is a privacy
-paradox. Signal Guard puts the cheap first pass (a risk score) on the device
-and pays for the cloud only when a human explanation is worth it.
+Scam messages mostly reach people who are less able to judge them. Two things go
+wrong with the usual advice: it is too generic ("be careful"), and the tools that
+could help send everything to a server. Signal Guard keeps the first pass local —
+so the inbox never leaves the machine — and spends cloud inference only on the
+messages that were already flagged. The reply is written to be forwarded as-is:
+plain language, no jargon, no app to install.
 
 ## How Firebase AI Logic is used
 
-- `FirebaseAI.getInstance(backend = GenerativeBackend.googleAI())` — Firebase
-  AI Logic client SDK (`com.google.firebase:firebase-ai`), Gemini Developer
-  API backend (free tier, no billing account).
-- Two model instances (`engine/SignalEngine.kt`):
-  - `OnDeviceConfig(mode = InferenceMode.ONLY_ON_DEVICE)` — the local risk
-    score (answers `RISK:` / `TYPE:`);
-  - `OnDeviceConfig(mode = InferenceMode.ONLY_IN_CLOUD)` — the explanation
-    pass (answers `WHY:` / `REPLY:`), only for scores ≥ 70.
-- `firebase-ai-ondevice` brings the Prompt API from ML Kit (AICore).
-- App Check protects every cloud call (debug provider in debug builds).
+- `getAI(app, { backend: new GoogleAIBackend() })` — Firebase AI Logic is
+  initialised at runtime (`src/firebase.ts`) on the **Gemini Developer API free
+  tier** (Spark plan, no payment method). `AgentPlatformBackend` (ex-Vertex AI)
+  is supported by the code but requires a Blaze billing account, so it is not the
+  default.
+- `getGenerativeModel(ai, { mode: InferenceMode.PREFER_ON_DEVICE, onDeviceParams,
+  inCloudParams })` — **hybrid inference** for scoring (`src/models.ts`): the SDK
+  prefers Gemini Nano and falls back to the cloud model when the device cannot
+  run it. `response.inferenceSource` drives the LOCAL / CLOUD badge, so the UI
+  never lies about where a given message was scored.
+- `getGenerativeModel(ai, { mode: InferenceMode.ONLY_IN_CLOUD })` — the
+  explanation pass, called **only** for a flagged message (`src/engine.ts`).
+- `initializeAppCheck(...)` — App Check protects every cloud call
+  (`src/firebase.ts`), with the debug provider for local development.
 
-## Build and run
+## Quickstart
 
 ```bash
-cp <your project>/google-services.json app/google-services.json
-./gradlew assembleDebug      # APK in app/build/outputs/apk/debug/
-./gradlew testDebugUnitTest  # unit tests
+npm ci
+cp .env.example .env.local   # fill with your Firebase project values
+npm run dev
 ```
 
-`google-services.json` is git-ignored: the Google Services Gradle plugin is
-only applied when the file exists, so the repo builds and the tests run
-without a Firebase project.
+Environment variables are documented in `.env.example`. Never commit real values.
+For local development set `VITE_APPCHECK_DEBUG=1` so App Check uses the debug
+provider. The app needs Chrome 139+ with the built-in model available
+(`chrome://on-device-internals`) to score locally; without it the SDK falls back
+to the cloud and the badge shows `CLOUD`.
 
-## On-device requirements
+| Command | Purpose |
+|---|---|
+| `npm run dev` | Vite dev server |
+| `npm test` | Unit tests (vitest) for the parsers, the metrics and the signal detection |
+| `npm run build` | Type-check + production build |
+| `npm run preview` | Serve the production build |
 
-- Android 8.0 (API 26)+, foreground only, single-turn text (≤ 4000 tokens);
-  only English and Korean have been validated for on-device inference.
-- Device from the [supported Prompt API list](https://developers.google.com/ml-kit/genai#prompt-device);
-  otherwise the local score falls back and the status line says so.
+## Architecture
+
+```
+src/
+  core/inbox.ts     the fictional inbox (never a real SMS)
+  core/parse.ts     pure parsers: RISK/TYPE, WHY/REPLY, levels, escalation
+  core/prompts.ts   the two prompts (short local pass, cloud explanation)
+  core/signals.ts   deterministic markers underlined in the UI
+  core/metrics.ts   medians and local share, computed from real runs
+  core/types.ts     shared types
+  firebase.ts       Firebase + App Check + Firebase AI Logic bootstrap
+  models.ts         hybrid scorer (prefer on-device) + cloud explainer
+  engine.ts         score -> escalate if >= 70 -> explain
+  ui/               Relief design system: room, relief numbers, plates, sheets
+tests/              vitest unit tests (no network)
+```
+
+The visual language is the locked **Relief** design (`G-DESIGN/STYLE.md`,
+planches `G-DESIGN/planches/relief/`): a white room lit from the ceiling, scores
+sculpted on the wall, plates on the floor. Colour is data — the orange
+`#ee4f24` only appears for a score ≥ 70 or for a trip to the cloud. Fonts are
+embedded (OFL), so the rendering is identical offline.
 
 ## Demo script (3 minutes)
 
-1. Launch the app: four fictional messages, nothing scored yet.
-2. Press **Score the inbox**: gauges fill in, each row shows `⚡ LOCAL` with
-   the latency; the status line counts the flagged messages.
-3. The phishing and spoofed-bank rows show `☁ CLOUD` with the red-flag
-   explanation and a suggested reply.
-4. Show that the two benign rows never left the device (`⚡ LOCAL` only).
+1. Press **Score the inbox**: four fictional messages are scored **on the
+   device**. The relief numbers fill in, the audit line counts local analyses
+   versus cloud calls.
+2. Two messages cross 70: their plates get a circle, an arrow up and a note
+   (`up to the cloud · 1.38 s · explained`). The other two get a grey tick and
+   `stayed here`.
+3. Open a flagged plate: the local score, the flagged fragments, the cloud
+   explanation and a reply written to be forwarded to a relative. **Copy the
+   reply**.
+4. Open **Paste a message**, paste a real scam you received: it is scored on the
+   device, and only escalates if it deserves it.
+5. Point at the audit line: `4 local analyses · 2 cloud calls · 50% stayed on
+   device` — measured, not estimated.
+
+## Measurements
+
+The numbers quoted in the demo come from the audit line, which is computed from
+the actual runs (`src/core/metrics.ts`): median local latency, median cloud
+latency, number of local analyses, number of cloud calls and the share of
+messages that never left the device. Nothing is hard-coded.
 
 ## Limitations
 
-- On-device inference is experimental in the Firebase AI Logic SDK (no SLA).
-- The demo inbox is fictional and hard-coded on purpose (no real SMS, no PII).
-- The risk score is an estimate from the model, shown as such.
+- The on-device model requires a Chromium browser with the built-in model
+  available; otherwise the SDK falls back to the cloud and the badge says so.
+- The inbox is fictional and hard-coded on purpose: the app never reads a real
+  SMS inbox, so no personal data can reach a model by accident.
+- The risk score is an estimate from a small model, shown as such. It is a second
+  opinion, not a verdict.
+- The suggested reply is generated text: the user is expected to read it before
+  forwarding it.
 
 ## Built with
 
-Kotlin, Android (Views, Material 3), Firebase AI Logic (on-device + cloud),
-ML Kit Prompt API, Gradle, JUnit.
+TypeScript, Vite, vitest, Firebase (AI Logic, App Check).
