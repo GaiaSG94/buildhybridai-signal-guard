@@ -1,6 +1,7 @@
 @import './fonts.css';
 
 :root {
+  --floor: 660px;
   --ink: #141414;
   --ink-2: #77756f;
   --ink-3: #a9a6a0;
@@ -24,7 +25,7 @@ body {
 
 /* ===== room ===== */
 .wall {
-  position: absolute; left: 0; right: 0; top: 0; height: 660px;
+  position: absolute; left: 0; right: 0; top: 0; height: var(--floor);
   background:
     radial-gradient(260px 420px at 245px -40px, rgba(255,255,255,.95), rgba(255,255,255,0) 70%),
     radial-gradient(260px 420px at 575px -40px, rgba(255,255,255,.9), rgba(255,255,255,0) 70%),
@@ -42,7 +43,7 @@ body {
   background: #fff; box-shadow: 0 0 24px 8px rgba(255,255,255,.9);
 }
 .floor {
-  position: absolute; left: 0; right: 0; top: 660px; bottom: 0;
+  position: absolute; left: 0; right: 0; top: var(--floor); bottom: 0;
   background: linear-gradient(180deg, #c9c5bd 0%, #d8d5ce 30%, #e2dfd9 100%);
 }
 .floor::before {
@@ -53,7 +54,7 @@ body {
   opacity: .7;
 }
 .skirting {
-  position: absolute; left: 0; right: 0; top: 652px; height: 8px;
+  position: absolute; left: 0; right: 0; top: calc(var(--floor) - 8px); height: 8px;
   background: linear-gradient(#f2f0eb, #d3d0c9);
   box-shadow: 0 2px 6px rgba(0,0,0,.12);
 }

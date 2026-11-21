@@ -5,6 +5,7 @@ import { needsEscalation } from './core/parse';
 import { ESCALATION_THRESHOLD, type ScoredMessage } from './core/types';
 import { createEngine, explainMessage, runInbox, scoreMessage, type EngineModels } from './engine';
 import { initFirebase } from './firebase';
+import { setRoom } from './ui/relief';
 import {
   drawScribbles,
   playScan,
@@ -43,8 +44,30 @@ const fit = (elements: AppElements): void => {
   elements.stage.style.transform = `scale(${scale})`;
 };
 
+type ViewName = 'inbox' | 'message' | 'paste';
+
+/** Each page sets its room the way its planche does (lamps + floor line). */
+const ROOMS: Record<ViewName, { lamps: readonly number[]; floor: number }> = {
+  inbox: { lamps: [245, 575, 905, 1235], floor: 660 },
+  message: { lamps: [290, 700, 1000, 1300], floor: 700 },
+  paste: { lamps: [240, 640, 1150], floor: 700 },
+};
+
+const viewOf = (hash: string): ViewName => {
+  if (hash.startsWith('#/message/')) {
+    return 'message';
+  }
+  return hash === '#/paste' ? 'paste' : 'inbox';
+};
+
+const applyRoom = (elements: AppElements, view: ViewName): void => {
+  const room = ROOMS[view];
+  setRoom(elements, room.lamps, room.floor);
+};
+
 const routeView = (ctx: Ctx): void => {
   const hash = window.location.hash || '#/inbox';
+  applyRoom(ctx.elements, viewOf(hash));
   if (hash.startsWith('#/message/')) {
     const id = hash.slice('#/message/'.length);
     const scored = ctx.state.slots.find((slot) => slot?.message.id === id)
