@@ -1,6 +1,16 @@
 import { summarize } from '../core/metrics';
 import { findSignals } from '../core/signals';
 import { ESCALATION_THRESHOLD, type RunMetrics, type ScoredMessage } from '../core/types';
+import {
+  PLASTER,
+  FIRE,
+  drawPens,
+  fade,
+  loopPath,
+  pen,
+  rise,
+  tickPath,
+} from './relief';
 
 const COLUMNS = [245, 575, 905, 1235] as const;
 
@@ -69,24 +79,6 @@ export function setNotice(elements: AppElements, message: string | null): void {
   elements.notice.hidden = message === null;
   elements.notice.textContent = message ?? '';
 }
-
-/** Stacked shadows: lit from the ceiling, then the cast shadow on the wall. */
-function extrude(side1: readonly number[], side2: readonly number[], depth: number): string {
-  const layers: string[] = [];
-  for (let i = 1; i <= depth; i += 1) {
-    const k = i / depth;
-    const color = side1.map((v, j) => Math.round(v + (side2[j] - v) * k));
-    layers.push(`${(i * 0.35).toFixed(2)}px ${(i * 0.9).toFixed(2)}px 0 rgb(${color.join(',')})`);
-  }
-  layers.push(
-    `${(depth * 0.35 + 4).toFixed(2)}px ${(depth * 0.9 + 16).toFixed(2)}px 22px rgba(60,52,40,.28)`,
-    `${(depth * 0.35 + 14).toFixed(2)}px ${(depth * 0.9 + 46).toFixed(2)}px 60px rgba(60,52,40,.20)`,
-  );
-  return layers.join(',');
-}
-
-const PLASTER = extrude([226, 224, 218], [178, 174, 166], 22);
-const FIRE = extrude([214, 64, 26], [140, 36, 12], 22);
 
 function faceStyle(risk: number | null): string {
   if (risk === null) {
@@ -168,36 +160,6 @@ function plateHtml(scored: ScoredMessage | null, index: number): string {
   ].join('');
 }
 
-const NS = 'http://www.w3.org/2000/svg';
-
-function svgPath(d: string, width: number): SVGPathElement {
-  const path = document.createElementNS(NS, 'path');
-  path.setAttribute('d', d);
-  path.setAttribute('fill', 'none');
-  path.setAttribute('stroke', '#ee4f24');
-  path.setAttribute('stroke-width', String(width));
-  path.setAttribute('stroke-linecap', 'round');
-  path.setAttribute('stroke-linejoin', 'round');
-  return path;
-}
-
-function loopPath(cx: number, cy: number, rx: number, ry: number): string {
-  let seed = 5;
-  const random = (): number => {
-    seed = (seed * 16807) % 2147483647;
-    return seed / 2147483647;
-  };
-  const jitter = (amount: number): number => (random() - 0.5) * 2 * amount;
-  let d = '';
-  const start = -2.2;
-  for (let i = 0; i <= 56; i += 1) {
-    const t = start + (i / 56) * (Math.PI * 2 + 0.7);
-    const k = 1 + jitter(0.03);
-    d += `${i ? 'L' : 'M'}${(cx + Math.cos(t) * rx * k).toFixed(1)} ${(cy + Math.sin(t) * ry * k + i * 0.12).toFixed(1)}`;
-  }
-  return d;
-}
-
 /** Marker scribbles: a circle and an arrow up for the flagged messages. */
 export function drawScribbles(elements: AppElements, slots: readonly (ScoredMessage | null)[]): void {
   elements.notes.replaceChildren();
@@ -208,17 +170,18 @@ export function drawScribbles(elements: AppElements, slots: readonly (ScoredMess
     }
     const column = COLUMNS[index] ?? COLUMNS[COLUMNS.length - 1];
     if (scored.risk >= ESCALATION_THRESHOLD) {
-      elements.scribble.append(svgPath(loopPath(column + 8, 407, 150, 108), 2.6));
+      pen(elements.scribble, loopPath(column + 8, 407, 150, 108));
       const fromX = column + 112;
       const fromY = 309;
-      elements.scribble.append(
-        svgPath(
-          `M${fromX} ${fromY}C${fromX + 30} ${fromY - 30} ${fromX + 16} ${fromY - 70} ${fromX + 46} ${fromY - 100}`,
-          2.4,
-        ),
+      pen(
+        elements.scribble,
+        `M${fromX} ${fromY}C${fromX + 30} ${fromY - 30} ${fromX + 16} ${fromY - 70} ${fromX + 46} ${fromY - 100}`,
+        { width: 2.4 },
       );
-      elements.scribble.append(
-        svgPath(`${fromX + 29} ${fromY - 95}L${fromX + 47} ${fromY - 102}L${fromX + 50} ${fromY - 83}`, 2.4),
+      pen(
+        elements.scribble,
+        `${fromX + 29} ${fromY - 95}L${fromX + 47} ${fromY - 102}L${fromX + 50} ${fromY - 83}`,
+        { width: 2.4 },
       );
       const note = document.createElement('div');
       note.className = 'note';
@@ -227,15 +190,11 @@ export function drawScribbles(elements: AppElements, slots: readonly (ScoredMess
       note.innerHTML = `up to the cloud<br>${latencyText(scored.cloudLatencyMs, 'explained')} · explained`;
       elements.notes.append(note);
     } else {
-      const tick = document.createElementNS(NS, 'path');
-      tick.setAttribute('d', `M${column + 96} 321l9 11l22 -27`);
-      tick.setAttribute('fill', 'none');
-      tick.setAttribute('stroke', '#2a2a2a');
-      tick.setAttribute('stroke-width', '2.2');
-      tick.setAttribute('stroke-linecap', 'round');
-      tick.setAttribute('stroke-linejoin', 'round');
-      tick.setAttribute('opacity', '0.55');
-      elements.scribble.append(tick);
+      pen(elements.scribble, tickPath(column + 96, 321), {
+        color: '#2a2a2a',
+        opacity: 0.55,
+        width: 2.2,
+      });
     }
   });
 }
@@ -248,45 +207,11 @@ export function playScan(elements: AppElements): void {
     if (target === 0 && node.textContent === '--') {
       return;
     }
-    node.style.transition = 'none';
-    node.style.transform = 'translateY(14px)';
-    node.style.opacity = '0';
-    window.setTimeout(() => {
-      node.style.transition = 'transform 900ms cubic-bezier(.2,.8,.2,1), opacity 600ms';
-      node.style.transform = 'none';
-      node.style.opacity = '1';
-      const started = performance.now();
-      const tick = (): void => {
-        const progress = Math.min(1, (performance.now() - started) / 900);
-        const eased = 1 - Math.pow(1 - progress, 3);
-        node.textContent = String(Math.round(target * eased)).padStart(2, '0');
-        if (progress < 1) {
-          window.setTimeout(tick, 16);
-        }
-      };
-      tick();
-    }, 150 + index * 170);
+    rise(node, target, 150 + index * 170);
   });
 
-  [...elements.scribble.querySelectorAll('path')].forEach((path, index) => {
-    const length = path.getTotalLength();
-    path.style.transition = 'none';
-    path.style.strokeDasharray = String(length);
-    path.style.strokeDashoffset = String(length);
-    window.setTimeout(() => {
-      path.style.transition = 'stroke-dashoffset 600ms cubic-bezier(.5,0,.3,1)';
-      path.style.strokeDashoffset = '0';
-    }, 1300 + index * 160);
-  });
-
-  [...elements.notes.querySelectorAll<HTMLElement>('.note')].forEach((note, index) => {
-    note.style.transition = 'none';
-    note.style.opacity = '0';
-    window.setTimeout(() => {
-      note.style.transition = 'opacity 400ms';
-      note.style.opacity = '1';
-    }, 2000 + index * 400);
-  });
+  drawPens([...elements.scribble.querySelectorAll('path')], 1300, 160);
+  fade([...elements.notes.querySelectorAll('.note')], 2000, 400);
 }
 
 export function renderHeader(
