@@ -1,9 +1,9 @@
 # STATUS buildhybridai-signal-guard
 
-Phase: build
-Etat: doing
-Round: R1
-Maj: 2026-11-17 23:20
+Phase: design-impl
+Etat: done
+Round: R2 (07b)
+Maj: 2026-11-21 23:05
 
 ## opencode
 
@@ -35,3 +35,29 @@ Maj: 2026-11-17 23:20
 - **Reste a faire** : valeurs Firebase (`.env.local`) + App Check pour la demo
   cloud, test `tools/nano-check` sur le Chrome de Gaia, video <= 3 min
   (`SCRIPT.md` a reecrire pour la version web), hebergement de la demo.
+
+## opencode - 2026-11-21 (07b : implementation du design verrouille)
+
+- **Design Relief (/lock 2026-11-18) porte au produit, ecart planches/produit
+  -> 0 sur les 4 pages** (PR #7, branche `feat/relief-kit`) :
+  - kit Relief partage `src/ui/relief.ts` + salle parametrable par page
+    (lampes/ligne de sol comme chaque planche) ;
+  - **Inbox** 1-1 (deja proche, fleches corrigees) ;
+  - **Message** reconstruite : score en relief, piece a conviction epinglee
+    (feutre urgence/action/domaine via nouveau module pur `core/marks.ts`),
+    domaine sculpte avec chiffre d'allongement orange, plaques why/reply ;
+  - **Paste** reconstruite : feuille scotchee, balayage lumineux, 3 plaques
+    d'etapes, fleche cloud qui pulse puis ouvre l'exhibit ;
+  - **Dashboard** creee (planche 04) : session live (`core/session.ts`),
+    4 stats en relief, barres en boites relief, 3 signalements.
+- **Revue d'implementation** : section dans `G-DESIGN/DESIGN.md` + paires
+  planche|produit 1440x900 dans `G-DESIGN/revue/` (outil versionne
+  `tools/make-review-captures.py`, Chrome headless). Delta pixels moyen
+  3-17/255, DOM verifie sans erreur console. Ecarts volontaires listes
+  (audit line, valeurs reelles vs 12 fictives, pas de bouton "Report as
+  scam" fantome, etats vides/non-flagge couverts).
+- **Mode demo** : `?demo=1` = moteur deterministe hors-ligne (meme contrat
+  RISK/TYPE + WHY/REPLY, `core/demo.ts`) pour captures et video sans Firebase.
+- Gates : tests 30/30, typecheck OK, build OK, check-limits 0.
+- **Restent (hors 07b)** : valeurs Firebase + App Check, hebergement demo,
+  video <= 3 min (`SCRIPT.md`), soumission Devpost avant le 30/11 23:00.

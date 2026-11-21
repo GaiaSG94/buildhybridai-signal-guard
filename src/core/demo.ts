@@ -15,7 +15,7 @@ const DEMO_SCORES: Record<string, { risk: number; type: string }> = {
 const DEMO_EXPLANATIONS: Record<string, { why: string; reply: string }> = {
   m1: {
     why:
-      'It rushes you: "URGENT" and a threat to cut your access leave no time to check. It asks for money now, through a link that is not your provider: secure-verif1.xyz borrows familiar words and pads them with a 1.',
+      'It rushes you: "URGENT" and a threat to cut your access leave no time to check. It asks for money now, 49 EUR through a link instead of your usual payment method. The link is not your provider: secure-verif1.xyz borrows familiar words and pads them with a 1.',
     reply:
       'I will not pay through a link sent by text. I will check my account directly with my provider, using the number on my card.',
   },
