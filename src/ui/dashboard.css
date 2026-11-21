@@ -1,0 +1,29 @@
+/* Page Dashboard — G-DESIGN/planches/relief/04-dashboard.html */
+#view-dashboard .dashboard-head { position:absolute; left:0; right:0; top:92px; text-align:center; z-index:2; }
+#view-dashboard .kicker { font:500 11px var(--mono); letter-spacing:.32em; color:#8f8c85; text-transform:uppercase; }
+#view-dashboard .stat { position:absolute; top:150px; width:330px; text-align:center; z-index:2; }
+#view-dashboard .stat-0 { left:80px; }
+#view-dashboard .stat-1 { left:410px; }
+#view-dashboard .stat-2 { left:740px; }
+#view-dashboard .stat-3 { left:1070px; }
+#view-dashboard .stat .relief { font-size:176px; line-height:1; }
+#view-dashboard .stat-3 .relief { font-size:128px; padding-top:30px; }
+#view-dashboard .stat .u { display:block; margin-top:14px; font:500 11px/1.6 var(--mono); letter-spacing:.14em; text-transform:uppercase; color:#5f5d58; }
+#view-dashboard .stat .u b { color:var(--acc); font-weight:500; }
+#view-dashboard .stat .relief small { font-size:44px; letter-spacing:-.04em; margin-left:6px; }
+#view-dashboard .dist { position:absolute; left:40px; right:40px; top:446px; z-index:2; }
+#view-dashboard .dist .kicker { margin-bottom:22px; text-align:left; }
+#view-dashboard .bar-row { display:grid; grid-template-columns:150px 1fr 70px; align-items:center; height:56px; }
+#view-dashboard .bar-row .lb { font:500 11px var(--mono); letter-spacing:.14em; color:#5f5d58; text-transform:uppercase; }
+#view-dashboard .bar-row .lb small { display:block; letter-spacing:.04em; text-transform:none; color:#8f8c85; }
+#view-dashboard .bar-row .track { position:relative; height:34px; }
+#view-dashboard .bar-row .bar { position:absolute; left:0; top:0; height:34px; width:0; border-radius:2px; }
+#view-dashboard .bar-row .v { font:700 30px var(--mono); letter-spacing:-.05em; text-align:right; color:#5f5d58; }
+#view-dashboard .bar-row.hot .v { color:var(--acc); }
+#view-dashboard .reports { position:absolute; top:722px; left:40px; right:40px; display:grid; grid-template-columns:repeat(3,1fr); gap:28px; }
+#view-dashboard .reports .plaque { position:relative; padding-right:84px; }
+#view-dashboard .reports .sc { position:absolute; right:16px; bottom:12px; font:300 48px/1 var(--sans); letter-spacing:-.05em; color:var(--acc); }
+#view-dashboard .reports .k { margin-right:-68px; }
+#view-dashboard .reports h3 { margin-top:8px; }
+#view-dashboard .reports p { height:54px; overflow:hidden; }
+#view-dashboard .dashboard-marker { position:absolute; inset:0; z-index:4; pointer-events:none; overflow:visible; }

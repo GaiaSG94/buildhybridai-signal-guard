@@ -1,4 +1,4 @@
-import { InferenceSource, type AI, type GenerativeModel } from 'firebase/ai';
+import { InferenceSource, type AI } from 'firebase/ai';
 import { levelOf, needsEscalation, parseCloudOutput, parseLocalOutput } from './core/parse';
 import { buildCloudPrompt, buildLocalPrompt } from './core/prompts';
 import {
@@ -8,9 +8,18 @@ import {
 } from './core/types';
 import { createExplainer, createScorer } from './models';
 
+type InferenceSourceValue = (typeof InferenceSource)[keyof typeof InferenceSource];
+
+/** Structural model contract, so a deterministic demo engine can fit too. */
+export interface ModelLike {
+  generateContent(request: string): Promise<{
+    response?: { text(): string; inferenceSource?: InferenceSourceValue };
+  }>;
+}
+
 export interface EngineModels {
-  scorer: GenerativeModel;
-  explainer: GenerativeModel;
+  scorer: ModelLike;
+  explainer: ModelLike;
 }
 
 export function createEngine(ai: AI, cloudModel: string): EngineModels {
@@ -28,13 +37,13 @@ export async function scoreMessage(
   const started = performance.now();
   const result = await models.scorer.generateContent(buildLocalPrompt(message));
   const latencyMs = Math.round(performance.now() - started);
-  const { risk, type } = parseLocalOutput(result.response.text());
+  const { risk, type } = parseLocalOutput(result.response?.text() ?? '');
   return {
     message,
     risk,
     type,
     level: levelOf(risk),
-    source: result.response.inferenceSource === InferenceSource.IN_CLOUD ? 'in_cloud' : 'on_device',
+    source: result.response?.inferenceSource === InferenceSource.IN_CLOUD ? 'in_cloud' : 'on_device',
     latencyMs,
     cloudLatencyMs: null,
     explanation: null,
@@ -54,7 +63,7 @@ export async function explainMessage(
   return {
     ...scored,
     cloudLatencyMs,
-    explanation: parseCloudOutput(result.response.text()),
+    explanation: parseCloudOutput(result.response?.text() ?? ''),
   };
 }
 
