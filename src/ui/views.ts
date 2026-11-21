@@ -82,15 +82,15 @@ export function setNotice(elements: AppElements, message: string | null): void {
 
 function faceStyle(risk: number | null): string {
   if (risk === null) {
-    return `color:#ebe9e4;text-shadow:${PLASTER}`;
+    return `color:#ebe9e4;text-shadow:${PLASTER()}`;
   }
   if (risk >= ESCALATION_THRESHOLD) {
-    return `color:#f2582b;text-shadow:${FIRE}`;
+    return `color:#f2582b;text-shadow:${FIRE()}`;
   }
   if (risk >= 35) {
-    return `color:rgba(242,88,43,.55);text-shadow:${PLASTER}`;
+    return `color:rgba(242,88,43,.55);text-shadow:${PLASTER()}`;
   }
-  return `color:#f4f3ef;text-shadow:${PLASTER}`;
+  return `color:#f4f3ef;text-shadow:${PLASTER()}`;
 }
 
 const latencyText = (ms: number | null, fallback: string): string =>
@@ -272,25 +272,6 @@ function resultHtml(scored: ScoredMessage, threshold: number): string {
     explanation && explanation.reply
       ? `<div class="reply" id="reply">${esc(explanation.reply)}</div>`
       : `<p class="nothing">${flagged ? 'No reply came back from the cloud.' : 'Nothing to forward: this message is not flagged.'}</p>`,
-  ].join('');
-}
-
-export function renderMessage(
-  elements: AppElements,
-  scored: ScoredMessage,
-  threshold: number,
-  position: number,
-): void {
-  elements.views.message.innerHTML = [
-    `<div class="sheet">`,
-    `<p class="kicker">MESSAGE 0${position} · ${scored.type.toUpperCase()} · ${scored.source === 'on_device' ? 'LOCAL PASS' : 'CLOUD PASS'}</p>`,
-    `<h2>${esc(scored.message.sender)}<span>${esc(scored.message.handle)}</span></h2>`,
-    resultHtml(scored, threshold),
-    `<div class="row">`,
-    `<a class="btn ghost" href="#/inbox">Back to the inbox</a>`,
-    scored.explanation?.reply ? `<button class="btn" type="button" data-copy>Copy the reply</button>` : '',
-    `</div>`,
-    `</div>`,
   ].join('');
 }
 
