@@ -107,3 +107,50 @@
 ## LOCK — 2026-11-18
 
 Style **Relief** verrouillé à la demande de Gaia. Les références sont `STYLE.md` et les planches de `planches/relief/`. `v1/`, `v2/` et `v3/` restent comme historique et ne sont jamais écrasés. Toute nouvelle page (par exemple la popup de l'extension Chrome, si elle est demandée) se dessine dans ce style, sans nouvelle exploration.
+
+## opencode - Revue d'implémentation (07b, 2026-11-21)
+
+Design Relief porté au produit web R2 (TypeScript + Vite), écran par écran.
+Preuves : paires **planche | produit** 1440 × 900 dans `G-DESIGN/revue/`
+(`01-inbox.png` … `04-dashboard.png`, gauche = planche, droite = produit,
+produit en `?demo=1` : moteur hors-ligne déterministe, données réelles de
+session, aucune requête réseau). Outil : `tools/make-review-captures.py`
+(Chrome headless via Playwright, canal `chrome`). Vérification DOM + delta
+pixels par page : delta moyen RGB 3-17 / 255, zéro erreur console
+(`#view-inbox`, `#view-message`, `#view-paste`, `#view-dashboard`).
+
+- **Inbox** (`revue/01-inbox.png`) : 1-1 avec la planche (chiffres en relief,
+  plaques, feutre, montée du relief 900 ms + compteur). Écart volontaire :
+  la ligne d'audit sous le titre (données mesurées, `PAGES.md` l'exige) et
+  le seuil affiché dans le sur-titre — pas dans la planche.
+- **Message** (`revue/02-message.png`) : score en relief à gauche, pièce à
+  conviction épinglée (feutre : urgence cerclée, appel à l'action ondulé,
+  domaine encadré), domaine sculpté au mur avec le chiffre d'allongement en
+  orange, plaques « why » numérotées et réponse suggérée au sol. Écarts
+  volontaires : pas de bouton « Report as scam » (aucun pipeline de
+  signalement dans le produit — feature fantôme refusée) ; les raisons
+  viennent du texte cloud réel (3 phrases), pas de texte codé en dur ;
+  état « non flaggé » prévu par STYLE.md §8 (score plâtre, pas de flèche
+  cloud) — la planche ne couvre que l'état flaggé.
+- **Paste** (`revue/03-paste.png`) : feuille scotchée, balayage lumineux
+  pendant la lecture locale, score en relief à droite, 3 plaques d'étapes
+  (live/done/off), flèche cloud en pointillés qui pulse, note hors-ligne.
+  Écarts volontaires : la latence affichée est mesurée (pas 196 ms figé) ;
+  l'exemple prérempli de la planche sert de placeholder, pas de valeur ;
+  le champ garde le texte collé au retour sur la page.
+- **Dashboard** (`revue/04-dashboard.png`) : 4 statistiques en relief,
+  barres de répartition en boîtes en relief, cercle orange sur les appels
+  cloud, cercle pointillé sur la barre medium, coche grise sur « never
+  left », 3 plaques de signalements. Écarts volontaires : **les valeurs
+  sont celles de la session réelle** (12 analyses fictives de la planche →
+  compteur live : 4 analyses au scan + 1 collé = 5 local, 2-3 cloud) ;
+  état vide prévu (aucune analyse → note « run Score the inbox ») ; les
+  latences sont les médianes mesurées, pas 184 ms figé.
+
+Constats d'implémentation remontés au produit (hors design) :
+- pointes de flèches de l'Inbox : attribut `d` SVG invalide depuis le
+  scaffold (pas de `M` initial) — corrigé, les flèches se dessinent enfin ;
+- mur (`--floor`), lampes et ligne de sol devenus des paramètres par vue,
+  comme dans chaque planche (660 px Inbox, 700 px ailleurs).
+
+Gates : tests 30/30 vitest, typecheck propre, build OK, check-limits 0.

@@ -185,7 +185,7 @@ export function drawScribbles(elements: AppElements, slots: readonly (ScoredMess
       );
       pen(
         elements.scribble,
-        `${fromX + 29} ${fromY - 95}L${fromX + 47} ${fromY - 102}L${fromX + 50} ${fromY - 83}`,
+        `M${fromX + 29} ${fromY - 95}L${fromX + 47} ${fromY - 102}L${fromX + 50} ${fromY - 83}`,
         { width: 2.4 },
       );
       const note = document.createElement('div');
