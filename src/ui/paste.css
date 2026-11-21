@@ -1,0 +1,66 @@
+/* Page Paste a message — G-DESIGN/planches/relief/03-paste.html */
+#view-paste .tape {
+  position: absolute; top: 96px; width: 90px; height: 24px;
+  background: rgba(236,230,214,.8); box-shadow: 0 1px 2px rgba(0,0,0,.08); z-index: 3;
+}
+#view-paste .sheet {
+  position: absolute; left: 40px; top: 104px; width: 800px; height: 470px;
+  padding: 30px 36px 26px; background: #fbfaf7; transform: rotate(-.4deg); overflow: hidden;
+  display: flex; flex-direction: column;
+  box-shadow: 0 1px 0 #fff inset, 0 24px 40px -18px rgba(60,52,40,.45), 0 4px 8px rgba(60,52,40,.12);
+}
+#view-paste .hd {
+  display: flex; justify-content: space-between;
+  font: 500 11px var(--mono); letter-spacing: .14em; color: var(--ink-3); text-transform: uppercase;
+}
+#view-paste .sheet h2 { margin-top: 10px; font: 600 22px var(--sans); letter-spacing: -.02em; }
+#view-paste .sheet h2 small {
+  display: block; margin-top: 4px; font: 400 14px var(--sans);
+  letter-spacing: 0; color: var(--ink-2);
+}
+#view-paste textarea {
+  margin-top: 22px; flex: 1; width: 100%; border: 0; resize: none; background: transparent;
+  font: 500 30px/44px var(--sans); letter-spacing: -.03em; color: #222; outline: none;
+}
+#view-paste .ft {
+  display: flex; align-items: center; gap: 10px; padding-top: 14px; border-top: 1px dashed #d9d5cc;
+}
+#view-paste .ft small { margin-left: auto; font: 500 11px var(--mono); color: var(--ink-2); }
+#view-paste .scan {
+  position: absolute; left: 0; right: 0; height: 120px; top: -140px; pointer-events: none; z-index: 3;
+  background: linear-gradient(180deg, rgba(255,255,255,0), rgba(255,255,255,.85) 55%, rgba(238,79,36,.25) 58%, rgba(255,255,255,0) 62%);
+}
+
+#view-paste .right { position: absolute; left: 900px; top: 120px; width: 500px; z-index: 2; }
+#view-paste .kicker {
+  font: 500 11px var(--mono); letter-spacing: .32em;
+  color: #8f8c85; text-transform: uppercase;
+}
+#view-paste .state {
+  font: 500 12px/1.7 var(--mono); color: #5f5d58; margin: 24px 0 0 8px; min-height: 42px;
+}
+#view-paste .state b { color: var(--acc); font-weight: 500; }
+#view-paste .pscore { font-size: 260px; line-height: .95; display: inline-block; }
+
+#view-paste .steps {
+  position: absolute; top: 724px; left: 40px; right: 40px;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px;
+}
+#view-paste .steps .plaque { position: relative; min-height: 128px; transition: opacity .4s; }
+#view-paste .steps .plaque.off { opacity: .45; }
+#view-paste .steps .n {
+  font: 300 40px/1 var(--sans); letter-spacing: -.05em; color: var(--ink-3);
+  float: right; margin-top: -2px;
+}
+#view-paste .steps .plaque.done .n { color: var(--ink); }
+#view-paste .steps .plaque.live .n { color: var(--acc); }
+#view-paste .steps .plaque .k .c { color: var(--acc); }
+#view-paste .offline {
+  position: absolute; left: 908px; top: 520px; width: 460px; z-index: 2;
+  font: 500 11.5px/1.6 var(--mono); color: #6d6b66;
+}
+#view-paste .offline b { color: var(--ink); font-weight: 500; }
+
+@keyframes sgpulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+#view-paste .pulse { animation: sgpulse 1.4s ease-in-out infinite; }
+#view-paste .marker { position: absolute; inset: 0; z-index: 4; pointer-events: none; overflow: visible; }

@@ -23,8 +23,8 @@ export function extrude(
   return layers.join(',');
 }
 
-export const PLASTER = extrude([226, 224, 218], [178, 174, 166]);
-export const FIRE = extrude([214, 64, 26], [140, 36, 12]);
+export const PLASTER = (depth = 22): string => extrude([226, 224, 218], [178, 174, 166], depth);
+export const FIRE = (depth = 22): string => extrude([214, 64, 26], [140, 36, 12], depth);
 
 /* seeded jitter, so the felt strokes look hand-drawn and stay deterministic */
 let seed = 5;
