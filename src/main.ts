@@ -12,13 +12,13 @@ import {
   queryApp,
   renderHeader,
   renderInbox,
-  renderMessage,
   renderPaste,
   renderPlates,
   setNotice,
   showView,
   type AppElements,
 } from './ui/views';
+import { renderMessagePage } from './ui/message';
 
 const THRESHOLD = ESCALATION_THRESHOLD;
 
@@ -77,7 +77,8 @@ const routeView = (ctx: Ctx): void => {
       return;
     }
     const position = Math.max(1, DEMO_INBOX.findIndex((message) => message.id === id) + 1);
-    renderMessage(ctx.elements, scored, THRESHOLD, position);
+    const origin = ctx.state.slots.some((slot) => slot?.message.id === id) ? 'Inbox' : 'Paste';
+    renderMessagePage(ctx.elements.views.message, ctx.elements.frame, scored, THRESHOLD, position, origin);
     showView(ctx.elements, 'message');
     return;
   }

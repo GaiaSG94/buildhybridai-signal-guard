@@ -1,0 +1,79 @@
+/* Page Message — G-DESIGN/planches/relief/02-message.html */
+.back {
+  position: absolute; left: 40px; top: 86px;
+  font: 500 12px var(--mono); color: var(--ink-2);
+  text-decoration: none; z-index: 5;
+}
+.back:hover { color: var(--ink); }
+
+#view-message .left { position: absolute; left: 40px; top: 140px; width: 500px; z-index: 2; }
+#view-message .left .kicker { margin-left: 6px; }
+#view-message .kicker {
+  font: 500 11px var(--mono); letter-spacing: .32em;
+  color: #8f8c85; text-transform: uppercase;
+}
+#view-message .score { margin-top: 4px; font-size: 300px; line-height: .95; }
+#view-message .meta {
+  margin: 28px 0 0 10px; font: 500 12px/1.7 var(--mono); color: #5f5d58;
+}
+#view-message .meta b { color: var(--acc); font-weight: 500; }
+
+/* the evidence sheet pinned to the wall */
+#view-message .sheet {
+  position: absolute; left: 600px; top: 118px; width: 780px; padding: 30px 36px 30px;
+  background: #fbfaf7; z-index: 2; transform: rotate(-.6deg);
+  box-shadow: 0 1px 0 #fff inset, 0 24px 40px -18px rgba(60,52,40,.45), 0 4px 8px rgba(60,52,40,.12);
+}
+#view-message .sheet::before,
+#view-message .sheet::after {
+  content: ''; position: absolute; top: -10px; width: 86px; height: 24px;
+  background: rgba(236,230,214,.75); box-shadow: 0 1px 2px rgba(0,0,0,.08);
+}
+#view-message .sheet::before { left: 40px; transform: rotate(-4deg); }
+#view-message .sheet::after { right: 40px; transform: rotate(3deg); }
+#view-message .hd {
+  display: flex; justify-content: space-between;
+  font: 500 11px var(--mono); letter-spacing: .14em; color: var(--ink-3); text-transform: uppercase;
+}
+#view-message .sheet h2 { margin-top: 10px; font: 600 20px var(--sans); letter-spacing: -.015em; }
+#view-message .sheet h2 span { font: 400 13px var(--mono); color: var(--ink-2); margin-left: 10px; }
+#view-message .msg { margin-top: 20px; font: 500 36px/1.38 var(--sans); letter-spacing: -.03em; color: #222; }
+#view-message .msg .mk { white-space: nowrap; }
+#view-message .ft {
+  margin-top: 22px; padding-top: 12px; border-top: 1px dashed #d9d5cc;
+  font: 500 11px var(--mono); color: var(--ink-2);
+  display: flex; justify-content: space-between;
+}
+
+#view-message .exhibit { position: absolute; left: 640px; top: 486px; z-index: 2; }
+#view-message .dom-relief {
+  margin-top: 10px; font: 700 64px/1 var(--mono); letter-spacing: -.06em; color: #f4f3ef;
+}
+#view-message .dom-relief span { color: var(--acc-face); }
+
+#view-message .floorset {
+  position: absolute; top: 724px; left: 40px; right: 40px;
+  display: grid; grid-template-columns: 1.15fr 1fr; gap: 40px;
+}
+#view-message .floorset .plaque { position: relative; padding: 16px 20px 18px; }
+#view-message .why ol {
+  list-style: none; margin-top: 10px; display: grid; gap: 7px; counter-reset: w;
+}
+#view-message .why li {
+  counter-increment: w; display: grid; grid-template-columns: 26px 1fr;
+  font: 400 13.5px/1.42 var(--sans); color: #3d3c39;
+}
+#view-message .why li::before {
+  content: counter(w, decimal-leading-zero);
+  font: 500 11px var(--mono); color: var(--acc); padding-top: 2px;
+}
+#view-message .plain { margin-top: 10px; font: 400 13.5px/1.45 var(--sans); color: var(--ink-2); }
+#view-message .reply blockquote {
+  margin-top: 10px; font: 500 17px/1.45 var(--sans); letter-spacing: -.015em; color: var(--ink);
+  padding-left: 14px; border-left: 2px solid var(--acc);
+}
+#view-message .reply .acts { margin-top: 14px; display: flex; gap: 10px; align-items: center; }
+#view-message .reply .acts small { margin-left: auto; font: 500 10.5px var(--mono); color: var(--ink-3); }
+#view-message .btn.acc { background: var(--acc); color: #fff; border-color: var(--acc); }
+
+#view-message .marker { position: absolute; inset: 0; z-index: 4; pointer-events: none; overflow: visible; }
