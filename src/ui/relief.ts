@@ -26,6 +26,30 @@ export function extrude(
 export const PLASTER = (depth = 22): string => extrude([226, 224, 218], [178, 174, 166], depth);
 export const FIRE = (depth = 22): string => extrude([214, 64, 26], [140, 36, 12], depth);
 
+/** Boxes in relief (bars, panels fixed to the wall) — planche kit `box()`. */
+export function reliefBox(
+  node: HTMLElement,
+  options: {
+    face?: string;
+    side?: string;
+    bottom?: string;
+    depth?: number;
+  } = {},
+): void {
+  const { face = '#f4f3ef', side = '#cfcbc3', bottom = '#b9b5ac', depth = 14 } = options;
+  node.style.background = face;
+  const layers = Array.from({ length: depth }, (_, i) => {
+    const k = (i + 1) * 0.35;
+    const y = (i + 1) * 0.9;
+    const color = i < depth - 1 ? side : bottom;
+    return `${k.toFixed(2)}px ${y.toFixed(2)}px 0 ${color}`;
+  });
+  layers.push(
+    `${(depth * 0.35 + 6).toFixed(2)}px ${(depth * 0.9 + 18).toFixed(2)}px 24px rgba(60,52,40,.25)`,
+  );
+  node.style.boxShadow = layers.join(',');
+}
+
 /* seeded jitter, so the felt strokes look hand-drawn and stay deterministic */
 let seed = 5;
 const random = (): number => {

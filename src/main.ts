@@ -2,8 +2,10 @@
 import { loadConfig } from './config';
 import { DEMO_INBOX, messageFromText } from './core/inbox';
 import { needsEscalation } from './core/parse';
+import { SessionLog } from './core/session';
 import { ESCALATION_THRESHOLD, type ScoredMessage } from './core/types';
 import { createEngine, explainMessage, runInbox, scoreMessage, type EngineModels } from './engine';
+import { createDemoEngine } from './core/demo';
 import { initFirebase } from './firebase';
 import { setRoom } from './ui/relief';
 import {
@@ -26,6 +28,7 @@ import {
   pasteText,
   renderPastePage,
 } from './ui/paste';
+import { renderDashboard } from './ui/dashboard';
 
 const THRESHOLD = ESCALATION_THRESHOLD;
 
@@ -39,6 +42,7 @@ interface Ctx {
   elements: AppElements;
   engine: EngineModels | null;
   state: State;
+  session: SessionLog;
 }
 
 const describe = (error: unknown): string =>
@@ -51,18 +55,22 @@ const fit = (elements: AppElements): void => {
   elements.stage.style.transform = `scale(${scale})`;
 };
 
-type ViewName = 'inbox' | 'message' | 'paste';
+type ViewName = 'inbox' | 'message' | 'paste' | 'dashboard';
 
 /** Each page sets its room the way its planche does (lamps + floor line). */
 const ROOMS: Record<ViewName, { lamps: readonly number[]; floor: number }> = {
   inbox: { lamps: [245, 575, 905, 1235], floor: 660 },
   message: { lamps: [290, 700, 1000, 1300], floor: 700 },
   paste: { lamps: [240, 640, 1150], floor: 700 },
+  dashboard: { lamps: [245, 575, 905, 1235], floor: 700 },
 };
 
 const viewOf = (hash: string): ViewName => {
   if (hash.startsWith('#/message/')) {
     return 'message';
+  }
+  if (hash === '#/dashboard') {
+    return 'dashboard';
   }
   return hash === '#/paste' ? 'paste' : 'inbox';
 };
@@ -94,11 +102,17 @@ const routeView = (ctx: Ctx): void => {
     showView(ctx.elements, 'paste');
     return;
   }
+  if (hash === '#/dashboard') {
+    renderDashboard(ctx.elements.views.dashboard, ctx.session.stats(THRESHOLD));
+    showView(ctx.elements, 'dashboard');
+    return;
+  }
   showView(ctx.elements, 'inbox');
 };
 
 const onScored = (ctx: Ctx) => (scored: ScoredMessage, index: number, total: number): void => {
   ctx.state.slots[index] = scored;
+  ctx.session.record(scored);
   renderPlates(ctx.elements, ctx.state.slots);
   notify(ctx, `Scoring ${index + 1}/${total}…`);
 };
@@ -145,10 +159,12 @@ const scorePasted = async (ctx: Ctx, text: string): Promise<void> => {
   try {
     let scored = await scoreMessage(engine, messageFromText(text));
     state.pasted = scored;
+    ctx.session.record(scored);
     pasteScored(elements.views.paste, elements.frame, scored, THRESHOLD);
     if (needsEscalation(scored.risk, THRESHOLD)) {
       scored = await explainMessage(engine, scored);
       state.pasted = scored;
+      ctx.session.record(scored);
       notify(
         ctx,
         `Scored ${scored.risk}/100 on device, explained in cloud (${scored.cloudLatencyMs} ms).`,
@@ -209,17 +225,21 @@ function boot(): void {
   const elements = queryApp();
   const config = loadConfig();
   const bundle = initFirebase(config);
+  const demo = new URLSearchParams(window.location.search).has('demo');
   const ctx: Ctx = {
     elements,
-    engine: bundle ? createEngine(bundle.ai, config.cloudModel) : null,
+    engine: demo ? createDemoEngine() : bundle ? createEngine(bundle.ai, config.cloudModel) : null,
     state: { slots: DEMO_INBOX.map(() => null), pasted: null, busy: false },
+    session: new SessionLog(),
   };
 
   fit(elements);
   window.addEventListener('resize', () => fit(elements));
   if (!ctx.engine) {
-    notify(ctx, 'Firebase is not configured: copy .env.example to .env.local.');
+    notify(ctx, demo ? 'Demo engine failed to load.' : 'Firebase is not configured: copy .env.example to .env.local.');
     elements.scan.disabled = true;
+  } else if (demo) {
+    notify(ctx, 'Demo mode: deterministic offline scores, no network.');
   }
 
   renderInbox(elements, ctx.state.slots);

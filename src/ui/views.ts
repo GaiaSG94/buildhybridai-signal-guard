@@ -27,7 +27,7 @@ export interface AppElements {
   scribble: SVGSVGElement;
   scan: HTMLButtonElement;
   replay: HTMLButtonElement;
-  views: { inbox: HTMLElement; message: HTMLElement; paste: HTMLElement };
+  views: { inbox: HTMLElement; message: HTMLElement; paste: HTMLElement; dashboard: HTMLElement };
   navLinks: HTMLAnchorElement[];
 }
 
@@ -53,7 +53,12 @@ export function queryApp(): AppElements {
     scribble: document.getElementById('scribble') as unknown as SVGSVGElement,
     scan: byId<HTMLButtonElement>('scan'),
     replay: byId<HTMLButtonElement>('replay'),
-    views: { inbox: byId('view-inbox'), message: byId('view-message'), paste: byId('view-paste') },
+    views: {
+      inbox: byId('view-inbox'),
+      message: byId('view-message'),
+      paste: byId('view-paste'),
+      dashboard: byId('view-dashboard'),
+    },
     navLinks: [...document.querySelectorAll<HTMLAnchorElement>('nav a')],
   };
 }
@@ -234,10 +239,13 @@ export function renderHeader(
   return metrics;
 }
 
-export function showView(elements: AppElements, view: 'inbox' | 'message' | 'paste'): void {
+export type ViewName = 'inbox' | 'message' | 'paste' | 'dashboard';
+
+export function showView(elements: AppElements, view: ViewName): void {
   elements.views.inbox.hidden = view !== 'inbox';
   elements.views.message.hidden = view !== 'message';
   elements.views.paste.hidden = view !== 'paste';
+  elements.views.dashboard.hidden = view !== 'dashboard';
   elements.scan.hidden = view !== 'inbox';
   elements.replay.hidden = view !== 'inbox';
   for (const link of elements.navLinks) {
