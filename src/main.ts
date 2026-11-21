@@ -1,4 +1,4 @@
-import './ui/style.css';
+﻿import './ui/style.css';
 import { loadConfig } from './config';
 import { DEMO_INBOX, messageFromText } from './core/inbox';
 import { needsEscalation } from './core/parse';
@@ -12,13 +12,20 @@ import {
   queryApp,
   renderHeader,
   renderInbox,
-  renderPaste,
   renderPlates,
   setNotice,
   showView,
   type AppElements,
 } from './ui/views';
 import { renderMessagePage } from './ui/message';
+import {
+  pasteClear,
+  pasteCountChars,
+  pasteReading,
+  pasteScored,
+  pasteText,
+  renderPastePage,
+} from './ui/paste';
 
 const THRESHOLD = ESCALATION_THRESHOLD;
 
@@ -83,7 +90,7 @@ const routeView = (ctx: Ctx): void => {
     return;
   }
   if (hash === '#/paste') {
-    renderPaste(ctx.elements, ctx.state.pasted, THRESHOLD, ctx.state.busy);
+    renderPastePage(ctx.elements.views.paste, ctx.state.pasted, ctx.state.busy);
     showView(ctx.elements, 'paste');
     return;
   }
@@ -133,23 +140,26 @@ const scorePasted = async (ctx: Ctx, text: string): Promise<void> => {
   }
   const { elements, engine, state } = ctx;
   state.busy = true;
-  renderPaste(elements, state.pasted, THRESHOLD, true);
+  renderPastePage(elements.views.paste, state.pasted, true);
+  pasteReading(elements.views.paste);
   try {
     let scored = await scoreMessage(engine, messageFromText(text));
+    state.pasted = scored;
+    pasteScored(elements.views.paste, elements.frame, scored, THRESHOLD);
     if (needsEscalation(scored.risk, THRESHOLD)) {
       scored = await explainMessage(engine, scored);
+      state.pasted = scored;
+      notify(
+        ctx,
+        `Scored ${scored.risk}/100 on device, explained in cloud (${scored.cloudLatencyMs} ms).`,
+      );
+      window.location.hash = '#/message/pasted';
+      return;
     }
-    state.pasted = scored;
-    renderPaste(elements, scored, THRESHOLD, false);
-    notify(
-      ctx,
-      scored.cloudLatencyMs === null
-        ? `Scored ${scored.risk}/100 on device, stayed there.`
-        : `Scored ${scored.risk}/100 on device, explained in cloud (${scored.cloudLatencyMs} ms).`,
-    );
+    notify(ctx, `Scored ${scored.risk}/100 on device, stayed there.`);
   } catch (error) {
     notify(ctx, `Scoring failed: ${describe(error)}`);
-    renderPaste(elements, state.pasted, THRESHOLD, false);
+    renderPastePage(elements.views.paste, state.pasted, false);
   } finally {
     state.busy = false;
   }
@@ -167,8 +177,7 @@ const copyReply = (ctx: Ctx): void => {
 };
 
 const onPasteClick = (ctx: Ctx): void => {
-  const field = document.getElementById('paste-text') as HTMLTextAreaElement | null;
-  const text = field?.value.trim() ?? '';
+  const text = pasteText(ctx.elements.views.paste);
   if (!text) {
     notify(ctx, 'Paste a message first.');
     return;
@@ -190,6 +199,9 @@ const handleClick = (ctx: Ctx, event: MouseEvent): void => {
   }
   if (target.closest('#paste-run')) {
     onPasteClick(ctx);
+  }
+  if (target.closest('#paste-clear')) {
+    pasteClear(ctx.elements.views.paste);
   }
 };
 
@@ -218,6 +230,7 @@ function boot(): void {
   elements.scan.addEventListener('click', () => void scanInbox(ctx));
   elements.replay.addEventListener('click', () => playScan(elements));
   elements.frame.addEventListener('click', (event) => handleClick(ctx, event));
+  elements.frame.addEventListener('input', () => pasteCountChars(elements.views.paste));
   document.fonts.ready.then(() => {
     if (ctx.state.slots.some((slot) => slot !== null)) {
       playScan(elements);
